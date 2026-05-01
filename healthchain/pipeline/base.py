@@ -571,6 +571,24 @@ class BasePipeline(Generic[T], ABC):
 
         self._components.insert(ref_index + offset, component)
 
+    def get_node(self, name: str) -> PipelineNode:
+        """
+        Returns the pipeline node with the given name.
+
+        Args:
+            name (str): The name of the node to retrieve.
+
+        Returns:
+            PipelineNode: The matching pipeline node.
+
+        Raises:
+            ValueError: If no node with the given name exists.
+        """
+        node = next((c for c in self._components if c.name == name), None)
+        if node is None:
+            raise ValueError(f"Component '{name}' not found in pipeline.")
+        return node
+
     def remove(self, component_name: str) -> None:
         """
         Removes a component from the pipeline.
