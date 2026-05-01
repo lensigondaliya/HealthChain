@@ -108,12 +108,18 @@ class BasePipeline(Generic[T], ABC):
         self._built_pipeline: Optional[Callable] = None
         self._output_template: Optional[str] = None
         self._output_template_path: Optional[Path] = None
+        self._debug_outputs: Dict[str, Any] = {}
 
     def __repr__(self) -> str:
         components_repr = ", ".join(
             [f'"{component.name}"' for component in self._components]
         )
         return f"[{components_repr}]"
+
+    @property
+    def debug_outputs(self) -> Dict[str, Any]:
+        """Intermediate outputs captured per component during a debug run."""
+        return self._debug_outputs
 
     def _configure_output_templates(
         self,
