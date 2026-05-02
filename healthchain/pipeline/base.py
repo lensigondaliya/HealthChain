@@ -715,46 +715,45 @@ class BasePipeline(Generic[T], ABC):
             self._built_pipeline = self.build()
         return self._built_pipeline(data)
 
-    def build(self) -> Callable:
+    def build(self, debug: bool = False) -> Callable:
         """
-        Builds and returns a pipeline function that applies a series of components to the input data.
-        Returns:
-            pipeline: A function that takes input data and applies the ordered components to it.
-        Raises:
-            ValueError: If a circular dependency is detected among the components.
+        Builds and returns a pipeline function.
+
+        Args:
+            debug: If True, captures intermediate outputs from each component
+                   into debug_outputs dict for inspection.
         """
 
         def resolve_dependencies():
             resolved = []
             unresolved = self._components.copy()
-
             while unresolved:
                 for component in unresolved:
                     if all(
-                        dep in [c.name for c in resolved]
-                        for dep in component.dependencies
+                            dep in [c.name for c in resolved]
+                            for dep in component.dependencies
                     ):
                         resolved.append(component)
                         unresolved.remove(component)
                         break
                 else:
                     raise ValueError("Circular dependency detected")
-
-            return [c.func for c in resolved]
+            return resolved
 
         ordered_components = resolve_dependencies()
 
-        def pipeline(data: Union[T, DataContainer[T]]) -> DataContainer[T]:
+        def pipeline(data):
             if not isinstance(data, DataContainer):
                 data = DataContainer(data)
 
-            data = reduce(lambda d, comp: comp(d), ordered_components, data)
+            for node in ordered_components:
+                data = node.func(data)
+                if debug:
+                    self._debug_outputs[node.name] = data
 
             return data
 
-        if self._built_pipeline is not pipeline:
-            self._built_pipeline = pipeline
-
+        self._built_pipeline = pipeline
         return pipeline
 
 

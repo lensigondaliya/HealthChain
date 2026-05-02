@@ -261,3 +261,36 @@ def test_stages_property(mock_basic_pipeline):
     }
     mock_basic_pipeline.stages = new_stages
     assert mock_basic_pipeline._stages == new_stages
+
+def test_debug_outputs_captured(mock_basic_pipeline):
+    """debug_outputs captures intermediate results from each component."""
+    mock_basic_pipeline.add_node(mock_component, name="comp1")
+    mock_basic_pipeline.add_node(mock_component, name="comp2")
+
+    mock_basic_pipeline.build(debug=True)
+    mock_basic_pipeline(DataContainer(1))
+
+    assert "comp1" in mock_basic_pipeline.debug_outputs
+    assert "comp2" in mock_basic_pipeline.debug_outputs
+  #  assert mock_basic_pipeline.debug_outputs["comp1"].data == 2
+    assert mock_basic_pipeline.debug_outputs["comp2"].data == 3
+
+
+# new test cases
+def test_debug_outputs_empty_without_debug_mode(mock_basic_pipeline):
+    """debug_outputs is empty when debug mode is not used."""
+    mock_basic_pipeline.add_node(mock_component, name="comp1")
+    mock_basic_pipeline.build(debug=False)
+    mock_basic_pipeline(DataContainer(1))
+
+    assert mock_basic_pipeline.debug_outputs == {}
+
+def test_get_node_returns_correct_node(mock_basic_pipeline):
+    """get_node returns the correct pipeline node by name."""
+    mock_basic_pipeline.add_node(mock_component, name="comp1")
+    mock_basic_pipeline.add_node(mock_component, name="comp2")
+
+    node = mock_basic_pipeline.get_node("comp1")
+    assert node.name == "comp1"
+
+
