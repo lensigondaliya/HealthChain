@@ -1,6 +1,16 @@
 def clean_html(text):
     """
-    Standardize HTML handling across the project
+    Cleans and standardizes HTML input across the project.
+
+    - Converts input to string
+    - Removes extra whitespace
+    - Ensures consistent formatting
+
+    Args:
+        text: Raw HTML/text input
+
+    Returns:
+        Cleaned text string
     """
     if not text:
         return ""
