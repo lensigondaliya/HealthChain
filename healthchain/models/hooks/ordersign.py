@@ -1,4 +1,5 @@
-from pydantic import Field, model_validator
+import re
+from pydantic import Field, model_validator, field_validator
 from typing import Optional, Dict, Any
 from healthchain.utils.idgenerator import IdGenerator
 
@@ -47,12 +48,23 @@ class OrderSignContext(BaseHookContext):
     draftOrders: Dict[str, Any] = Field(
         ..., description="A Bundle of FHIR request resources with a draft status."
     )
+    selections: list[str] = Field(
+    ..., description="The FHIR id of the newly selected order(s)."
+)
 
     @model_validator(mode="before")
     @classmethod
     def check_unexpected_keys(cls, values):
-        allowed_keys = {"userId", "patientId", "encounterId", "draftOrders"}
+        allowed_keys = {"userId", "patientId", "encounterId", "draftOrders", "selections"}
         unexpected_keys = set(values) - allowed_keys
         if unexpected_keys:
             raise ValueError(f"Unexpected keys provided: {unexpected_keys}")
         return values
+    
+    @field_validator("selections")
+    @classmethod
+    def validate_selections(cls, selections):
+        for selection in selections:
+            if "/" not in selection:
+                raise ValueError("Invalid selection format: must be ResourceType/ID")
+        return selections

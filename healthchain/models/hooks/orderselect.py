@@ -1,3 +1,4 @@
+import re
 from pydantic import Field, model_validator
 from typing import List, Dict, Optional, Any
 from typing_extensions import Self
@@ -74,6 +75,6 @@ class OrderSelectContext(BaseHookContext):
         for selection in self.selections:
             if "/" not in selection:
                 raise ValueError(
-                    "Each selection must be a valid FHIR resource identifier in the format 'ResourceType/ResourceID'."
+                    "Each selection must be a valid FHIR resource identifier in the format 'ResourceType/ID'."
                 )
         return self
